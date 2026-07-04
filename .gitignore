@@ -1,0 +1,102 @@
+# ==========================
+# Dependencies
+# ==========================
+node_modules/
+**/node_modules/
+
+# ==========================
+# Environment Variables
+# ==========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+client/.env
+server/.env
+
+# ==========================
+# Logs
+# ==========================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================
+# Build Folders
+# ==========================
+dist/
+build/
+client/dist/
+server/dist/
+
+# ==========================
+# Cache
+# ==========================
+.cache/
+.parcel-cache/
+.vite/
+.eslintcache
+
+# ==========================
+# Coverage
+# ==========================
+coverage/
+
+# ==========================
+# Runtime Files
+# ==========================
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ==========================
+# Operating System Files
+# ==========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==========================
+# IDE Files
+# ==========================
+.vscode/
+.idea/
+*.iml
+
+# ==========================
+# Temporary Files
+# ==========================
+tmp/
+temp/
+
+# ==========================
+# Uploads (Optional)
+# ==========================
+uploads/
+public/uploads/
+
+# ==========================
+# MongoDB Local Data (if used)
+# ==========================
+data/
+*.wt
+
+# ==========================
+# Package Manager
+# ==========================
+package-lock.json.bak
+yarn.lock.bak
+
+# ==========================
+# Miscellaneous
+# ==========================
+*.zip
+*.tar
+*.gz
+*.rar

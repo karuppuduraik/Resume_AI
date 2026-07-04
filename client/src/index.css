@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-inter bg-brandBg-light text-brandText-light transition-colors duration-300 antialiased;
+    scroll-behavior: smooth;
+  }
+  
+  body.dark {
+    @apply bg-brandBg-dark text-brandText-dark;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-glass;
+  }
+  
+  .dark .glass-card {
+    @apply bg-black/40 backdrop-blur-md border border-white/5 shadow-none;
+  }
+
+  .premium-btn {
+    @apply px-6 py-3 font-poppins font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2 active:scale-95;
+  }
+
+  .premium-input {
+    @apply w-full px-4 py-3 rounded-xl border border-brandBorder-light focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-white;
+  }
+
+  .dark .premium-input {
+    @apply bg-brandCard-dark border-brandBorder-dark text-brandText-dark focus:ring-primary/30 focus:border-primary;
+  }
+
+  .premium-label {
+    @apply block text-sm font-medium text-brandTextSecondary-light mb-1.5;
+  }
+
+  .dark .premium-label {
+    @apply text-brandTextSecondary-dark;
+  }
+
+  /* Custom scrollbar for premium feel */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brandBorder-light rounded-full hover:bg-primary/30 transition-colors duration-200;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-brandBorder-dark hover:bg-primary/40;
+  }
+}
+
+.floating-card-1 {
+  animation: float1 6s ease-in-out infinite;
+}
+
+.floating-card-2 {
+  animation: float2 8s ease-in-out infinite;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(1deg); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(-1deg); }
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  nav, footer, .no-print, button, select, input, textarea, .md\:w-48, .w-full.md\:w-48 {
+    display: none !important;
+  }
+
+  .grid {
+    display: block !important;
+  }
+
+  .sticky {
+    position: relative !important;
+    top: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .scale-\[0\.95\] {
+    transform: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+}
+
