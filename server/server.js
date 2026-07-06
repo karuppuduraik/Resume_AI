@@ -5,6 +5,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+require("dotenv").config();
 
 // Load environment variables
 dotenv.config();
@@ -69,6 +70,14 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Stop the other server or set a different PORT in .env`);
+    process.exit(1);
+  }
+  throw err;
 });
 
 // Handle unhandled promise rejections

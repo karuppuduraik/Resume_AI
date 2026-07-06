@@ -1,10 +1,27 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Initialize Gemini API client if API key is provided
+
+
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 let genAI = null;
-if (process.env.GEMINI_API_KEY) {
-  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-}
+
+try {
+  if (
+    process.env.GEMINI_API_KEY &&
+    process.env.GEMINI_API_KEY.trim() !== ""
+  ) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    console.log("✅ Gemini AI Connected");
+  } else {
+    console.log("⚠️ Gemini API Key not found. Running in Offline Mode.");
+  }
+} catch (error) {
+  console.error("Gemini Error:");
+console.error(error);
+console.error(error.message);
+
+if (error.response) {
+    console.log(error.response);
+}}
 
 // Helper to check if AI is available
 const isAIAvailable = () => {
@@ -105,7 +122,7 @@ const generateSummary = async ({ title, skills }) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const prompt = `Write a professional, compelling, and ATS-friendly resume summary (about 3-4 sentences) for a ${title} who has skills in: ${skills}. Make it highly professional and engaging. Return ONLY the plain text summary, no surrounding markdown, no quotes, and no conversational intro.`;
     
     const result = await model.generateContent(prompt);
@@ -123,7 +140,7 @@ const generateSkills = async ({ title }) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const prompt = `Provide a list of 10-12 highly relevant skills for a resume of a ${title}. Return them as a JSON array of strings only. Format: ["Skill 1", "Skill 2", ...]. Ensure it is a valid JSON array and contains nothing else.`;
     
     const result = await model.generateContent(prompt);
@@ -147,7 +164,7 @@ const generateProjectDescription = async ({ title, technologies }) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const prompt = `Generate 3 strong, results-oriented, and ATS-friendly resume bullet points describing a project titled "${title}" built with technologies: "${technologies}". Start each bullet point with an impact action verb. Return them as a JSON array of strings only. Format: ["Bullet 1", "Bullet 2", "Bullet 3"]. Ensure it is a valid JSON array and contains nothing else.`;
     
     const result = await model.generateContent(prompt);
@@ -170,7 +187,7 @@ const generateCoverLetter = async ({ name, title, company, jobDescription, skill
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const prompt = `Write a professional cover letter from ${name} applying for the position of "${title}" at "${company}". The job description is: "${jobDescription}". The applicant's skills include: "${skills}". Format it beautifully. Return only the cover letter body text, no extra conversational introduction from the AI.`;
     
     const result = await model.generateContent(prompt);
@@ -188,7 +205,7 @@ const checkATS = async (resumeText, jobDescription) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const prompt = `You are a professional ATS (Applicant Tracking System) reviewer and hiring manager.
 Compare the resume text and job description provided below and evaluate it.
 
