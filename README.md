@@ -192,17 +192,7 @@ VITE_API_URL=http://localhost:5000/api
 VITE_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
 ```
 
----
 
-# 📸 Screenshots
-
-Add screenshots here
-
-- Home Page
-- Login
-- Resume Builder
-- Dashboard
-- Admin Panel
 
 ---
 
