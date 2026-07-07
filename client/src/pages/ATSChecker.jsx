@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { 
   FaCheckCircle, FaExclamationTriangle, FaTimesCircle, 
-  FaArrowRight, FaSpinner, FaClipboard, FaChartPie, FaFileAlt 
+  FaArrowRight, FaSpinner, FaClipboard, FaChartPie, FaFileAlt, FaUpload 
 } from 'react-icons/fa';
+
+const ATS_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const ATSChecker = () => {
   const [resumes, setResumes] = useState([]);
@@ -13,6 +15,10 @@ const ATSChecker = () => {
   const [reports, setReports] = useState([]);
   const [latestReport, setLatestReport] = useState(null);
   const [error, setError] = useState('');
+  
+  // New States for File Upload Feature
+  const [atsCheckMode, setAtsCheckMode] = useState('saved'); // 'saved' or 'file'
+  const [uploadedFile, setUploadedFile] = useState(null);
 
   const fetchResumes = async () => {
     try {
@@ -47,12 +53,21 @@ const ATSChecker = () => {
     fetchReports();
   }, []);
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setUploadedFile(e.target.files[0]);
+    }
+  };
+
   const handleAnalyze = async (e) => {
     e.preventDefault();
     setError('');
     
-    if (!selectedResumeId) {
+    if (atsCheckMode === 'saved' && !selectedResumeId) {
       return setError('Please select a resume to analyze.');
+    }
+    if (atsCheckMode === 'file' && !uploadedFile) {
+      return setError('Please upload a resume file (PDF or TXT).');
     }
     if (!jobDescription.trim()) {
       return setError('Please paste a job description.');
@@ -61,10 +76,30 @@ const ATSChecker = () => {
     setIsLoading(true);
 
     try {
-      const res = await api.post('/ai/ats-check', {
-        resumeId: selectedResumeId,
-        jobDescription,
-      });
+      let res;
+      if (atsCheckMode === 'saved') {
+        res = await api.post('/ai/ats-check', {
+          resumeId: selectedResumeId,
+          jobDescription,
+        });
+      } else {
+        // Multipart file upload via FormData
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        formData.append('jobDescription', jobDescription);
+
+        const response = await fetch(`${ATS_API_URL}/ai/ats-check-file`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+            // DO NOT set Content-Type header here; browser will automatically set it
+          },
+          body: formData
+        });
+
+        res = await response.json();
+      }
 
       if (res.success) {
         setLatestReport(res.data);
@@ -78,6 +113,21 @@ const ATSChecker = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const renderFormattedText = (text) => {
+    if (!text) return null;
+    const parts = text.split('**');
+    return parts.map((part, index) => {
+      if (index % 2 === 1) {
+        return (
+          <strong key={index} className="font-semibold text-primary dark:text-secondary bg-primary/10 px-1.5 py-0.5 rounded text-[11px] mx-0.5">
+            {part}
+          </strong>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    });
   };
 
   const getScoreColor = (score) => {
@@ -100,6 +150,32 @@ const ATSChecker = () => {
         <div className="lg:col-span-1 bg-white dark:bg-brandCard-dark border border-brandBorder-light dark:border-brandBorder-dark rounded-2xl p-6 shadow-premium h-fit">
           <h2 className="text-lg font-bold font-poppins text-brandText-light dark:text-brandText-dark mb-4">Run Scanner</h2>
           
+          {/* Mode Switch Tabs */}
+          <div className="flex bg-brandBg-light dark:bg-brandBg-dark/55 p-1 rounded-xl mb-5 border border-brandBorder-light dark:border-brandBorder-dark">
+            <button
+              type="button"
+              onClick={() => setAtsCheckMode('saved')}
+              className={`flex-1 text-center py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                atsCheckMode === 'saved'
+                  ? 'bg-primary text-white shadow-premium'
+                  : 'text-brandTextSecondary-light dark:text-brandTextSecondary-dark hover:text-brandText-light'
+              }`}
+            >
+              Saved Resume
+            </button>
+            <button
+              type="button"
+              onClick={() => setAtsCheckMode('file')}
+              className={`flex-1 text-center py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                atsCheckMode === 'file'
+                  ? 'bg-primary text-white shadow-premium'
+                  : 'text-brandTextSecondary-light dark:text-brandTextSecondary-dark hover:text-brandText-light'
+              }`}
+            >
+              Upload File
+            </button>
+          </div>
+
           {error && (
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 rounded-r text-xs text-red-700 dark:text-red-300">
               {error}
@@ -107,22 +183,54 @@ const ATSChecker = () => {
           )}
 
           <form onSubmit={handleAnalyze} className="space-y-5">
-            <div>
-              <label className="premium-label">Select Resume</label>
-              <select
-                value={selectedResumeId}
-                onChange={(e) => setSelectedResumeId(e.target.value)}
-                className="premium-input bg-transparent cursor-pointer"
-              >
-                {resumes.length === 0 ? (
-                  <option value="">No resumes found. Create one first!</option>
-                ) : (
-                  resumes.map(r => (
-                    <option key={r._id} value={r._id}>{r.title}</option>
-                  ))
-                )}
-              </select>
-            </div>
+            {atsCheckMode === 'saved' ? (
+              <div>
+                <label className="premium-label">Select Saved Resume</label>
+                <select
+                  value={selectedResumeId}
+                  onChange={(e) => setSelectedResumeId(e.target.value)}
+                  className="premium-input bg-transparent cursor-pointer"
+                >
+                  {resumes.length === 0 ? (
+                    <option value="">No resumes found. Create one first!</option>
+                  ) : (
+                    resumes.map(r => (
+                      <option key={r._id} value={r._id}>{r.title}</option>
+                    ))
+                  )}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="premium-label">Upload Resume File</label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-brandBorder-light dark:border-brandBorder-dark border-dashed rounded-xl hover:border-primary/50 transition-all bg-brandBg-light dark:bg-brandBg-dark/10 relative">
+                  <div className="space-y-1 text-center">
+                    <FaUpload className="mx-auto h-8 w-8 text-brandTextSecondary-light/60 mb-2" />
+                    <div className="flex text-xs text-brandTextSecondary-light dark:text-brandTextSecondary-dark">
+                      <label className="relative cursor-pointer bg-transparent rounded-md font-semibold text-primary hover:text-primary-dark focus-within:outline-none">
+                        <span>Upload a file</span>
+                        <input 
+                          type="file" 
+                          name="file"
+                          accept=".pdf,.txt"
+                          onChange={handleFileChange}
+                          className="sr-only" 
+                        />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-[10px] text-brandTextSecondary-light/75">
+                      PDF, TXT up to 5MB
+                    </p>
+                    {uploadedFile && (
+                      <div className="mt-2 text-xs font-semibold text-primary flex items-center justify-center gap-1.5 bg-primary/10 px-2 py-1 rounded">
+                        <FaFileAlt /> {uploadedFile.name}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="premium-label">Paste Job Description</label>
@@ -137,8 +245,8 @@ const ATSChecker = () => {
 
             <button
               type="submit"
-              disabled={isLoading || resumes.length === 0}
-              className="w-full premium-btn text-white bg-primary hover:bg-primary-dark shadow-glass cursor-pointer flex items-center justify-center gap-2"
+              disabled={isLoading || (atsCheckMode === 'saved' && resumes.length === 0)}
+              className="w-full premium-btn text-white bg-primary hover:bg-primary-dark shadow-glass cursor-pointer flex items-center justify-center gap-2 font-semibold"
             >
               {isLoading ? (
                 <>
@@ -228,7 +336,7 @@ const ATSChecker = () => {
                     {latestReport.formatting?.feedback?.map((fb, i) => (
                       <li key={i} className="flex gap-2 items-start text-xs text-brandTextSecondary-light dark:text-brandTextSecondary-dark">
                         <FaCheckCircle className="text-success mt-0.5 flex-shrink-0" />
-                        <span>{fb}</span>
+                        <span>{renderFormattedText(fb)}</span>
                       </li>
                     ))}
                   </ul>
@@ -259,7 +367,7 @@ const ATSChecker = () => {
                     {latestReport.suggestions?.map((sug, i) => (
                       <li key={i} className="flex gap-2 items-start text-xs text-brandTextSecondary-light dark:text-brandTextSecondary-dark">
                         <span className="text-primary font-bold">{i + 1}.</span>
-                        <span>{sug}</span>
+                        <span>{renderFormattedText(sug)}</span>
                       </li>
                     ))}
                   </ul>
@@ -271,7 +379,7 @@ const ATSChecker = () => {
               <FaClipboard className="text-5xl text-brandTextSecondary-light/30 mx-auto mb-4" />
               <h3 className="text-lg font-bold font-poppins mb-1">No Scan Reports Yet</h3>
               <p className="text-sm text-brandTextSecondary-light dark:text-brandTextSecondary-dark max-w-sm mx-auto">
-                Paste a job description on the left and select your resume to run an automated ATS compatibility check.
+                Paste a job description on the left and choose a saved resume or upload a PDF/TXT resume to run the ATS optimizer.
               </p>
             </div>
           )}

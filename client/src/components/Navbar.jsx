@@ -3,11 +3,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   FaUser, FaSignOutAlt, FaFileAlt, FaRobot, 
-  FaCheckCircle, FaMoon, FaSun, FaBars, FaTimes 
+  FaCheckCircle, FaMoon, FaSun, FaBars, FaTimes, FaCrown
 } from 'react-icons/fa';
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, requestPremium } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -30,6 +30,19 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleRequestPremium = async () => {
+    try {
+      const res = await requestPremium();
+      if (res.success) {
+        alert('Premium access request sent! Please await approval from the Administrator.');
+      } else {
+        alert(res.message || 'Failed to request premium access.');
+      }
+    } catch (err) {
+      alert('Failed to request premium access.');
+    }
   };
 
   const isActive = (path) => location.pathname === path;
@@ -65,12 +78,32 @@ const Navbar = () => {
                   <Link to="/cover-letter" className={`inline-flex items-center px-1 pt-1 text-sm ${isActive('/cover-letter') ? activeClass : inactiveClass}`}>
                     Cover Letter
                   </Link>
+                  {user.role === 'admin' && (
+                    <Link to="/admin" className={`inline-flex items-center px-1 pt-1 text-sm ${isActive('/admin') ? activeClass : inactiveClass}`}>
+                      Admin Panel
+                    </Link>
+                  )}
                 </>
               )}
             </div>
           </div>
 
           <div className="hidden md:flex items-center gap-4">
+            {/* Premium Button */}
+            {user && user.premiumStatus === 'none' && user.role !== 'admin' && (
+              <button
+                onClick={handleRequestPremium}
+                className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black text-xs font-bold rounded-lg transition-all duration-300 shadow-md transform hover:scale-105 cursor-pointer flex items-center gap-1"
+              >
+                Get Premium <FaCrown className="text-[10px]" />
+              </button>
+            )}
+            {user && user.premiumStatus === 'requested' && (
+              <span className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold rounded-lg">
+                Premium Pending ⏳
+              </span>
+            )}
+
             {/* Dark Mode Toggle */}
             <button 
               onClick={toggleDarkMode}
@@ -84,13 +117,18 @@ const Navbar = () => {
               <div className="flex items-center gap-4">
                 <Link to="/profile" className="flex items-center gap-2 text-sm text-brandText-light dark:text-brandText-dark hover:text-primary dark:hover:text-secondary transition-colors duration-200">
                   {user.profilePicture ? (
-                    <img src={user.profilePicture} alt={user.name} className="h-8 w-8 rounded-full object-cover border border-primary/20" />
+                    <img src={user.profilePicture} alt={user.name} referrerPolicy="no-referrer" className="h-8 w-8 rounded-full object-cover border border-primary/20" />
                   ) : (
                     <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className="font-medium">{user.name}</span>
+                  <span className="font-medium flex items-center gap-1">
+                    {user.name}
+                    {user.premiumStatus === 'approved' && (
+                      <FaCrown className="text-amber-500 premium-crown-sparkle text-xs" title="Premium Account" />
+                    )}
+                  </span>
                 </Link>
                 <button 
                   onClick={handleLogout}
@@ -147,6 +185,24 @@ const Navbar = () => {
                 <Link to="/cover-letter" onClick={() => setIsOpen(false)} className={`block px-3 py-2 rounded-md text-base ${isActive('/cover-letter') ? 'bg-primary/10 text-primary' : 'text-brandTextSecondary-light dark:text-brandTextSecondary-dark'}`}>
                   Cover Letter
                 </Link>
+                {user.role === 'admin' && (
+                  <Link to="/admin" onClick={() => setIsOpen(false)} className={`block px-3 py-2 rounded-md text-base ${isActive('/admin') ? 'bg-primary/10 text-primary' : 'text-brandTextSecondary-light dark:text-brandTextSecondary-dark'}`}>
+                    Admin Panel
+                  </Link>
+                )}
+                {user.premiumStatus === 'none' && user.role !== 'admin' && (
+                  <button
+                    onClick={() => { setIsOpen(false); handleRequestPremium(); }}
+                    className="w-full text-center block px-3 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black font-bold rounded-lg mt-2 cursor-pointer"
+                  >
+                    Get Premium ⭐
+                  </button>
+                )}
+                {user.premiumStatus === 'requested' && (
+                  <div className="text-center block px-3 py-2 bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold rounded-lg mt-2 text-sm">
+                    Premium Pending ⏳
+                  </div>
+                )}
                 <Link to="/profile" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base text-brandTextSecondary-light dark:text-brandTextSecondary-dark">
                   Profile
                 </Link>

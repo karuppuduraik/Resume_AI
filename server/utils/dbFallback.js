@@ -14,6 +14,15 @@ const isConnected = () => {
 
 // User Operations
 const userDb = {
+  find: async (query = {}) => {
+    if (isConnected()) return null;
+    if (query.$or) {
+      const searchVal = query.$or[0].name?.$regex || '';
+      const regex = new RegExp(searchVal, 'i');
+      return memoryStore.users.filter(u => regex.test(u.name) || regex.test(u.email));
+    }
+    return memoryStore.users;
+  },
   findOne: async (query) => {
     if (isConnected()) return null; // let mongoose handle it
     const key = Object.keys(query)[0];
@@ -22,7 +31,27 @@ const userDb = {
   },
   findById: async (id) => {
     if (isConnected()) return null;
+    if (!id) return null;
     return memoryStore.users.find(u => u._id === id.toString()) || null;
+  },
+  findByIdAndUpdate: async (id, updateData) => {
+    if (isConnected()) return null;
+    const idx = memoryStore.users.findIndex(u => u._id === id.toString());
+    if (idx !== -1) {
+      memoryStore.users[idx] = { ...memoryStore.users[idx], ...updateData, updatedAt: new Date() };
+      return memoryStore.users[idx];
+    }
+    return null;
+  },
+  findByIdAndDelete: async (id) => {
+    if (isConnected()) return null;
+    const idx = memoryStore.users.findIndex(u => u._id === id.toString());
+    if (idx !== -1) {
+      const deleted = memoryStore.users[idx];
+      memoryStore.users.splice(idx, 1);
+      return deleted;
+    }
+    return null;
   },
   create: async (userData) => {
     const newUser = {
@@ -30,6 +59,7 @@ const userDb = {
       ...userData,
       profilePicture: userData.profilePicture || '',
       role: userData.role || 'user',
+      premiumStatus: userData.premiumStatus || 'none',
       createdAt: new Date(),
       updatedAt: new Date(),
       // Mock comparison helper

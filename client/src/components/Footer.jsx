@@ -94,11 +94,6 @@ const Footer = () => {
           <p className="text-xs text-brandTextSecondary-light dark:text-brandTextSecondary-dark">
             &copy; {new Date().getFullYear()} Resume AI. All rights reserved.
           </p>
-          <div className="flex gap-4 mt-4 sm:mt-0">
-            <span className="text-xs text-brandTextSecondary-light dark:text-brandTextSecondary-dark">
-              Designed with ❤️ for modern builders.
-            </span>
-          </div>
         </div>
       </div>
     </footer>

@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }) => {
           name: res.data.name,
           email: res.data.email,
           role: res.data.role,
+          premiumStatus: res.data.premiumStatus || 'none',
           profilePicture: res.data.profilePicture,
         });
         return { success: true };
@@ -60,6 +61,7 @@ export const AuthProvider = ({ children }) => {
           name: res.data.name,
           email: res.data.email,
           role: res.data.role,
+          premiumStatus: res.data.premiumStatus || 'none',
           profilePicture: res.data.profilePicture,
         });
         return { success: true };
@@ -67,6 +69,27 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: res.message || 'Registration failed' };
     } catch (error) {
       return { success: false, message: error.message || 'Registration failed' };
+    }
+  };
+
+  const loginWithGoogle = async (googleToken) => {
+    try {
+      const res = await api.post('/auth/google', { token: googleToken });
+      if (res.success) {
+        localStorage.setItem('token', res.data.token);
+        setUser({
+          _id: res.data._id,
+          name: res.data.name,
+          email: res.data.email,
+          role: res.data.role,
+          premiumStatus: res.data.premiumStatus || 'none',
+          profilePicture: res.data.profilePicture,
+        });
+        return { success: true };
+      }
+      return { success: false, message: res.message || 'Google Login failed' };
+    } catch (error) {
+      return { success: false, message: error.message || 'Google Login failed' };
     }
   };
 
@@ -84,6 +107,7 @@ export const AuthProvider = ({ children }) => {
           name: res.data.name,
           email: res.data.email,
           role: res.data.role,
+          premiumStatus: res.data.premiumStatus || 'none',
           profilePicture: res.data.profilePicture,
         });
         if (res.data.token) {
@@ -97,8 +121,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const requestPremium = async () => {
+    try {
+      const res = await api.post('/auth/premium-request');
+      if (res.success) {
+        setUser(prev => ({
+          ...prev,
+          premiumStatus: 'requested'
+        }));
+        return { success: true };
+      }
+      return { success: false, message: res.message || 'Request failed' };
+    } catch (error) {
+      return { success: false, message: error.message || 'Request failed' };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, logout, updateProfile, requestPremium }}>
       {children}
     </AuthContext.Provider>
   );

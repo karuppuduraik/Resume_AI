@@ -163,6 +163,67 @@ const checkATSController = async (req, res) => {
   }
 };
 
+// @desc    Check ATS Score of uploaded resume file
+// @route   POST /api/ai/ats-check-file
+// @access  Private
+const checkATSFileController = async (req, res) => {
+  try {
+    const { jobDescription } = req.body;
+    const mongoose = require('mongoose');
+
+    if (!req.file || !jobDescription) {
+      return res.status(400).json({ success: false, message: 'Please provide both a resume file and a job description' });
+    }
+
+    let resumeText = '';
+    if (req.file.mimetype === 'application/pdf') {
+      const pdfParseModule = require('pdf-parse');
+      if (pdfParseModule.PDFParse) {
+        const parser = new pdfParseModule.PDFParse({ data: req.file.buffer });
+        const pdfData = await parser.getText();
+        resumeText = pdfData.text;
+      } else {
+        const pdf = typeof pdfParseModule === 'function' ? pdfParseModule : (pdfParseModule.default || pdfParseModule);
+        const pdfData = await pdf(req.file.buffer);
+        resumeText = pdfData.text;
+      }
+    } else if (req.file.mimetype === 'text/plain') {
+      resumeText = req.file.buffer.toString('utf-8');
+    } else {
+      return res.status(400).json({ success: false, message: 'Unsupported file format. Please upload PDF or TXT.' });
+    }
+
+    if (!resumeText || !resumeText.trim()) {
+      return res.status(400).json({ success: false, message: 'Could not extract text from the file.' });
+    }
+
+    // Call AI/Mock checkATS
+    const analysis = await geminiService.checkATS(resumeText, jobDescription);
+
+    // Save report to database
+    const reportFields = {
+      userId: req.user.id,
+      resumeId: new mongoose.Types.ObjectId(), // Create dummy ID since it's uploaded directly
+      jobTitle: req.file.originalname,
+      jobDescription,
+      score: analysis.score,
+      keywordMatch: analysis.keywordMatch,
+      formatting: analysis.formatting,
+      missingSkills: analysis.missingSkills,
+      suggestions: analysis.suggestions,
+    };
+
+    const report = dbFallback.isConnected()
+      ? await ATSReport.create(reportFields)
+      : await dbFallback.atsDb.create(reportFields);
+
+    res.json({ success: true, data: report });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get all ATS reports for the user
 // @route   GET /api/ats/reports
 // @access  Private
@@ -186,5 +247,6 @@ module.exports = {
   generateProjectsController,
   generateCoverLetterController,
   checkATSController,
+  checkATSFileController,
   getATSReports,
 };

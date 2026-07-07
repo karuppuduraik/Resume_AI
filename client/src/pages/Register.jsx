@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { FaUser, FaEnvelope, FaLock, FaArrowRight, FaSpinner } from 'react-icons/fa';
 
 const Register = () => {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,6 +41,70 @@ const Register = () => {
     }
   };
 
+  const handleMockGoogleLogin = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const res = await loginWithGoogle('mock-google-token');
+      if (res.success) {
+        navigate('/dashboard');
+      } else {
+        setError(res.message || 'Mock Google Sign-In failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Mock Google Sign-In failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    setError('');
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    
+    // Auto-detect placeholder/example client ID to trigger mock login bypass
+    const isMock = !clientId || clientId.includes('example') || clientId.includes('YOUR_');
+
+    if (isMock) {
+      handleMockGoogleLogin();
+      return;
+    }
+
+    if (!window.google) {
+      setError('Google SDK failed to load. Please check your network connection.');
+      return;
+    }
+
+    try {
+      const client = window.google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+        callback: async (tokenResponse) => {
+          if (tokenResponse && tokenResponse.access_token) {
+            setIsLoading(true);
+            try {
+              const res = await loginWithGoogle(tokenResponse.access_token);
+              if (res.success) {
+                navigate('/dashboard');
+              } else {
+                setError(res.message || 'Google registration failed');
+              }
+            } catch (err) {
+              setError('Google Sign-in failed. Please try again.');
+            } finally {
+              setIsLoading(false);
+            }
+          }
+        },
+      });
+      client.requestAccessToken();
+    } catch (err) {
+      console.error(err);
+      setError('Failed to initialize Google login prompt.');
+    }
+  };
+
   return (
     <div className="min-h-[calc(100-16)] flex items-center justify-center py-16 px-4">
       {/* Background decoration */}
@@ -59,6 +123,29 @@ const Register = () => {
             {error}
           </div>
         )}
+
+        {/* Google Powered Registration (Brown styled G logo & real OAuth popup trigger) */}
+        <div className="mb-6">
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full py-2.5 px-4 border border-amber-800/30 bg-amber-50/10 hover:bg-amber-50/30 dark:bg-brandCard-dark dark:border-brandBorder-dark rounded-xl text-sm font-semibold text-amber-900 dark:text-amber-400 hover:text-amber-950 flex items-center justify-center gap-2.5 cursor-pointer shadow-sm transition-all"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#78350f" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.555 0-6.438-2.883-6.438-6.438s2.883-6.438 6.438-6.438c1.558 0 2.977.558 4.093 1.487l3.078-3.078C19.16 2.19 15.9.962 12.24.962 6.035.962 1 5.997 1 12.202s5.035 11.24 11.24 11.24c5.89 0 10.99-4.22 10.99-11.24 0-.768-.096-1.344-.24-1.917H12.24z"/>
+            </svg>
+            Sign up with Google
+          </button>
+        </div>
+
+        <div className="relative my-6 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-brandBorder-light dark:border-brandBorder-dark"></div>
+          </div>
+          <div className="relative bg-white dark:bg-brandCard-dark px-3 text-xs uppercase text-brandTextSecondary-light dark:text-brandTextSecondary-dark font-semibold">
+            Or register with email
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -132,7 +219,7 @@ const Register = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full premium-btn text-white bg-primary hover:bg-primary-dark shadow-glass cursor-pointer flex items-center justify-center gap-2"
+            className="w-full premium-btn text-white bg-primary hover:bg-primary-dark shadow-glass cursor-pointer flex items-center justify-center gap-2 font-semibold"
           >
             {isLoading ? (
               <>

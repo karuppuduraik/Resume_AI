@@ -12,6 +12,24 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
 
+  const toggleRole = async () => {
+    setIsLoading(true);
+    setFeedback({ type: '', message: '' });
+    const targetRole = user.role === 'admin' ? 'user' : 'admin';
+    try {
+      const res = await updateProfile({ name: user.name, email: user.email, role: targetRole });
+      if (res.success) {
+        setFeedback({ type: 'success', message: `Successfully changed your role to ${targetRole}!` });
+      } else {
+        setFeedback({ type: 'error', message: res.message || 'Failed to toggle role' });
+      }
+    } catch (err) {
+      setFeedback({ type: 'error', message: 'Failed to toggle role' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFeedback({ type: '', message: '' });
@@ -54,12 +72,15 @@ const Profile = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left column: profile picture preview */}
-        <div className="md:col-span-1 bg-white dark:bg-brandCard-dark border border-brandBorder-light dark:border-brandBorder-dark rounded-2xl p-6 shadow-premium h-fit text-center">
+        <div className={`md:col-span-1 bg-white dark:bg-brandCard-dark border border-brandBorder-light dark:border-brandBorder-dark rounded-2xl p-6 shadow-premium h-fit text-center ${
+          user?.premiumStatus === 'approved' ? 'premium-glow-card' : ''
+        }`}>
           <div className="relative w-32 h-32 mx-auto mb-4 group">
             {photoUrl ? (
               <img 
                 src={photoUrl} 
                 alt="Profile Preview" 
+                referrerPolicy="no-referrer"
                 className="w-full h-full rounded-full object-cover border-2 border-primary" 
               />
             ) : (
@@ -71,9 +92,23 @@ const Profile = () => {
               <FaCamera className="text-white text-xl" />
             </div>
           </div>
-          <h3 className="font-bold text-lg text-brandText-light dark:text-brandText-dark font-poppins">{user?.name}</h3>
+          <h3 className={`font-bold text-lg font-poppins ${
+            user?.premiumStatus === 'approved' ? 'premium-shimmer-text' : 'text-brandText-light dark:text-brandText-dark'
+          }`}>{user?.name}</h3>
           <p className="text-xs text-brandTextSecondary-light dark:text-brandTextSecondary-dark mb-4">{user?.email}</p>
           <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-semibold uppercase">{user?.role} Account</span>
+          {(user?.email === 'karuppuduraikece@gmail.com') && (
+            <div className="mt-4 pt-4 border-t border-brandBorder-light dark:border-brandBorder-dark">
+              <button
+                onClick={toggleRole}
+                disabled={isLoading}
+                type="button"
+                className="text-xs w-full py-2 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-950 dark:text-amber-300 font-semibold rounded-lg border border-amber-500/25 transition-colors cursor-pointer"
+              >
+                Toggle Dev Admin Role
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right column: form */}

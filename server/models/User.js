@@ -31,6 +31,19 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    premiumStatus: {
+      type: String,
+      enum: ['none', 'requested', 'approved'],
+      default: 'none',
+    },
+    resetPasswordCode: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
