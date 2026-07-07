@@ -5,6 +5,20 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-primary: #B97A56;
+    --color-primary-dark: #9a6241;
+    --color-primary-light: #d2a385;
+    --color-primary-rgb: 185, 122, 86;
+    --color-secondary: #F4A261;
+    --color-secondary-dark: #e76f51;
+    --color-secondary-light: #f8c291;
+    --color-bg-light: #FFF9F5;
+    --color-bg-dark: #121212;
+    --color-card-light: #FFFFFF;
+    --color-card-dark: #1E1E1E;
+  }
+
   body {
     @apply font-inter bg-brandBg-light text-brandText-light transition-colors duration-300 antialiased;
     scroll-behavior: smooth;
@@ -32,13 +46,17 @@
     @apply px-6 py-3 font-poppins font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2 active:scale-95;
   }
 
-  .premium-input {
-    @apply w-full px-4 py-3 rounded-xl border border-brandBorder-light focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-white;
-  }
+.premium-input {
+  @apply w-full px-4 py-3 rounded-xl border border-brandBorder-light focus:outline-none focus:ring-2 focus:border-primary transition-all duration-200 bg-white;
+
+  --tw-ring-color: rgba(var(--color-primary-rgb), 0.2);
+}
 
   .dark .premium-input {
-    @apply bg-brandCard-dark border-brandBorder-dark text-brandText-dark focus:ring-primary/30 focus:border-primary;
-  }
+  @apply bg-brandCard-dark border-brandBorder-dark text-brandText-dark focus:border-primary;
+
+  --tw-ring-color: rgba(var(--color-primary-rgb), 0.3);
+}
 
   .premium-label {
     @apply block text-sm font-medium text-brandTextSecondary-light mb-1.5;
@@ -59,12 +77,18 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-brandBorder-light rounded-full hover:bg-primary/30 transition-colors duration-200;
+   @apply bg-brandBorder-light rounded-full transition-colors duration-200;
   }
+  ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--color-primary-rgb), 0.3);
+}
 
   .dark ::-webkit-scrollbar-thumb {
-    @apply bg-brandBorder-dark hover:bg-primary/40;
+    @apply bg-brandBorder-dark;
   }
+  .dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--color-primary-rgb), 0.4);
+}
 }
 
 .floating-card-1 {
@@ -120,3 +144,155 @@
   }
 }
 
+/* ==========================================================================
+   Admin Premium Theme: Gold & Black / Gold & White
+   ========================================================================== */
+
+/* Light Mode Admin Theme: Gold & White */
+.admin-theme {
+  background-color: var(--color-bg-light, #FAF8F5) !important;
+  color: #1C1917 !important;
+}
+
+.admin-theme .bg-white,
+.admin-theme .glass-card,
+.admin-theme [class*="bg-brandCard-light"] {
+  background-color: var(--color-card-light, #FFFFFF) !important;
+  border-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.2) !important;
+  box-shadow: 0 8px 30px rgba(var(--color-primary-rgb, 185, 122, 86), 0.04) !important;
+}
+
+/* Dark Mode Admin Theme: Gold & Black */
+.dark .admin-theme {
+  background-color: var(--color-bg-dark, #09090B) !important; /* Deepest black */
+  color: #F4F4F5 !important;
+}
+
+.dark .admin-theme [class*="bg-brandCard-dark"],
+.dark .admin-theme .glass-card {
+  background-color: var(--color-card-dark, #121214) !important; /* Rich obsidian black */
+  border-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.15) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Secondary cards, headers, sections */
+.admin-theme .bg-amber-50\/10 {
+  background-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.05) !important;
+  border-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.25) !important;
+}
+.dark .admin-theme .bg-amber-50\/10 {
+  background-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.03) !important;
+  border-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.15) !important;
+}
+
+/* Premium Gold Accent Text & Colors */
+.admin-theme .text-primary,
+.admin-theme .text-amber-900,
+.admin-theme .text-amber-400,
+.admin-theme .text-amber-600,
+.admin-theme .text-amber-800 {
+  color: var(--color-primary) !important;
+}
+
+.admin-theme .hover\:text-primary:hover,
+.admin-theme .hover\:text-amber-950:hover {
+  color: var(--color-primary-dark) !important;
+}
+
+/* Premium Gold Buttons */
+.admin-theme .bg-primary,
+.admin-theme .bg-amber-500\/10,
+.admin-theme .premium-btn.bg-primary {
+  background-color: var(--color-primary) !important;
+  color: #09090B !important; /* Black text on gold buttons */
+  font-weight: 600 !important;
+}
+
+.admin-theme .bg-primary:hover,
+.admin-theme .premium-btn.bg-primary:hover {
+  background-color: var(--color-primary-dark) !important;
+  color: #09090B !important;
+}
+
+/* Border Overrides */
+.admin-theme .border-primary,
+.admin-theme .border-amber-800\/30,
+.admin-theme [class*="border-brandBorder-light"] {
+  border-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.25) !important;
+}
+.dark .admin-theme [class*="border-brandBorder-dark"] {
+  border-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.15) !important;
+}
+
+/* Inputs and interactive focus */
+.admin-theme .premium-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 185, 122, 86), 0.15) !important;
+}
+
+/* Scrollbar thumb to Gold */
+.admin-theme ::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.3) !important;
+}
+.admin-theme ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary) !important;
+}
+
+/* Admin Specific elements, badges */
+.admin-theme .bg-primary\/10 {
+  background-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.1) !important;
+  color: var(--color-primary) !important;
+}
+.admin-theme .bg-amber-100 {
+  background-color: rgba(var(--color-primary-rgb, 185, 122, 86), 0.15) !important;
+  color: var(--color-primary) !important;
+}
+
+/* ==========================================================================
+   Premium User Custom Animations
+   ========================================================================== */
+
+@keyframes premiumGlow {
+  0%, 100% { 
+    border-color: var(--color-primary); 
+    box-shadow: 0 0 10px rgba(var(--color-primary-rgb, 185, 122, 86), 0.2); 
+  }
+  50% { 
+    border-color: var(--color-secondary, #F4A261); 
+    box-shadow: 0 0 20px rgba(var(--color-primary-rgb, 185, 122, 86), 0.4); 
+  }
+}
+
+.premium-glow-card {
+  animation: premiumGlow 4s ease-in-out infinite;
+  border: 2px solid var(--color-primary) !important;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.premium-shimmer-text {
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary, #F4A261) 50%, var(--color-primary) 100%);
+  background-size: 200% auto;
+  color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  animation: shimmer 3s infinite linear;
+}
+
+.premium-crown-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes sparkle {
+  0% { 
+    transform: scale(1) rotate(0deg); 
+    filter: drop-shadow(0 0 1px var(--color-primary)); 
+  }
+  100% { 
+    transform: scale(1.2) rotate(15deg); 
+    filter: drop-shadow(0 0 6px var(--color-primary)); 
+  }
+}

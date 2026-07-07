@@ -6,16 +6,19 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import ResumeBuilder from './pages/ResumeBuilder';
 import ATSChecker from './pages/ATSChecker';
 import CoverLetterGenerator from './pages/CoverLetterGenerator';
+import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ThemeCustomizer from './components/ThemeCustomizer';
 
 // Spinner Component for global loading
 const LoadingScreen = () => (
@@ -40,6 +43,25 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Admin Protected Route Guard
+const ProtectedRouteAdmin = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingScreen />;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
+};
+
 // Public Route Guard (prevents logged in users from seeing login/register)
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -56,14 +78,21 @@ const PublicRoute = ({ children }) => {
 };
 
 function AppContent() {
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
   }
 
+  const isAdmin = user && user.role === 'admin';
+  const isPremiumOrAdmin = user && (user.role === 'admin' || user.premiumStatus === 'approved');
+
   return (
-    <div className="flex flex-col min-h-screen bg-brandBg-light dark:bg-brandBg-dark text-brandText-light dark:text-brandText-dark transition-colors duration-300">
+    <div className={`flex flex-col min-h-screen transition-colors duration-300 ${
+      isPremiumOrAdmin 
+        ? 'admin-theme' 
+        : 'bg-brandBg-light dark:bg-brandBg-dark text-brandText-light dark:text-brandText-dark'
+    }`}>
       <Navbar />
       <main className="flex-grow">
         <Routes>
@@ -79,6 +108,12 @@ function AppContent() {
           <Route path="/register" element={
             <PublicRoute>
               <Register />
+            </PublicRoute>
+          } />
+          
+          <Route path="/forgot-password" element={
+            <PublicRoute>
+              <ForgotPassword />
             </PublicRoute>
           } />
 
@@ -113,11 +148,18 @@ function AppContent() {
             </ProtectedRoute>
           } />
 
+          <Route path="/admin" element={
+            <ProtectedRouteAdmin>
+              <AdminDashboard />
+            </ProtectedRouteAdmin>
+          } />
+
           {/* Fallback 404 Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />
+      {isPremiumOrAdmin && <ThemeCustomizer />}
     </div>
   );
 }

@@ -9,22 +9,22 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#B97A56',
-          dark: '#9a6241',
-          light: '#d2a385',
+          DEFAULT: 'var(--color-primary, #B97A56)',
+          dark: 'var(--color-primary-dark, #9a6241)',
+          light: 'var(--color-primary-light, #d2a385)',
         },
         secondary: {
-          DEFAULT: '#F4A261',
-          dark: '#e76f51',
-          light: '#f8c291',
+          DEFAULT: 'var(--color-secondary, #F4A261)',
+          dark: 'var(--color-secondary-dark, #e76f51)',
+          light: 'var(--color-secondary-light, #f8c291)',
         },
         brandBg: {
-          light: '#FFF9F5',
-          dark: '#121212',
+          light: 'var(--color-bg-light, #FFF9F5)',
+          dark: 'var(--color-bg-dark, #121212)',
         },
         brandCard: {
-          light: '#FFFFFF',
-          dark: '#1E1E1E',
+          light: 'var(--color-card-light, #FFFFFF)',
+          dark: 'var(--color-card-dark, #1E1E1E)',
         },
         brandText: {
           light: '#2D2D2D',
